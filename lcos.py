@@ -19,7 +19,7 @@ class LCOSImg:
     mainscreen_resolution = (1920, 1200)
     lcos_shape = 600, 800  # rows, cols
 
-    def __init__(self, pattern=None, monitor=True):
+    def __init__(self, pattern=None):
         """
         Arguments:
             patterns (array): array of uint8 containing the pattern.
@@ -30,7 +30,8 @@ class LCOSImg:
         self.label.resize(*self.lcos_shape[::-1])
         self._pattern = np.zeros(self.lcos_shape, dtype='uint8')
         self._position_msg = ''
-        self.monitor = monitor
+        self.fig = plt.figure()
+        self.im = plt.imshow(self._pattern, vmin=0, vmax=255)
         if pattern is not None:
             self.pattern = pattern
         self.to_main_screen()
@@ -53,34 +54,11 @@ class LCOSImg:
         # Update image on monitor window
         self._update_monitor()
 
-    @property
-    def monitor(self):
-        return self._monitor
-
-    @monitor.setter
-    def monitor(self, value):
-        assert value or not value
-        self._monitor = value
-        self._update_monitor()
-
     def _update_monitor(self):
-        if not self._monitor:
-            # Close figure
-            if hasattr(self, 'fig'):
-                plt.close(self.fig)
-                delattr(self, 'fig')
-                delattr(self, 'im')
-        else:
-            if (not hasattr(self, 'fig') or
-                    not plt.fignum_exists(self.fig.number)):
-                # Create new figure
-                self.fig = plt.figure()
-                self.im = plt.imshow(self.pattern, vmin=0, vmax=255)
-            else:
-                # Update old figure
-                self.im.set_data(self._pattern)
-                self.fig.canvas.draw()
-            self.fig.axes[0].set_title(self._position_msg)
+        # Update old figure
+        self.im.set_data(self._pattern)
+        self.fig.canvas.draw()
+        self.fig.axes[0].set_title(self._position_msg)
 
     def show(self):
         """Show pattern. Reverse method is `hide`."""
