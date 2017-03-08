@@ -13,8 +13,7 @@ class LCOSImg:
 
     On initialization it shows a pattern (with no frame) on the main screen
     and a monitor window. Use methods .to_*_lcos() to move pattern to an LCOS
-    screen. Assign the `pattern` property to change pattern and the `monitor`
-    property to enable/disable the monitor window.
+    screen. Assign the `pattern` property to change the displayed pattern.
     """
     mainscreen_resolution = (1920, 1200)
     lcos_shape = 600, 800  # rows, cols
@@ -22,16 +21,18 @@ class LCOSImg:
     def __init__(self, pattern=None):
         """
         Arguments:
-            patterns (array): array of uint8 containing the pattern.
-            monitor (bool): if True show the monitor window.
+            pattern (array): array of uint8 containing the pattern.
         """
+        self._pattern = np.zeros(self.lcos_shape, dtype='uint8')
+        self._position_msg = ''
+        # Setup frameless display window
         self.label = QtGui.QLabel()
         self.label.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.label.resize(*self.lcos_shape[::-1])
-        self._pattern = np.zeros(self.lcos_shape, dtype='uint8')
-        self._position_msg = ''
+        # Setup monitor window
         self.fig = plt.figure()
         self.im = plt.imshow(self._pattern, vmin=0, vmax=255)
+        # Show pattern
         if pattern is not None:
             self.pattern = pattern
         self.to_main_screen()
@@ -55,7 +56,6 @@ class LCOSImg:
         self._update_monitor()
 
     def _update_monitor(self):
-        # Update old figure
         self.im.set_data(self._pattern)
         self.fig.canvas.draw()
         self.fig.axes[0].set_title(self._position_msg)
